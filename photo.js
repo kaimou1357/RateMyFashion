@@ -7,6 +7,4 @@ var Photo = function Photo(file_url, positive_ratings, negative_ratings, object_
   this.object_id = object_id;
 }
 
-
-
 module.exports = Photo;
