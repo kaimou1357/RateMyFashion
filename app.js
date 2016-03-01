@@ -18,11 +18,11 @@ var photoArray = [];
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/views/index.html');
-})
+});
 
 app.get('/load_next_picture', function(req, res){
   var picture_url = "/images/cat.jpg";
-  var base_url = "localhost:3000"
+  var base_url = "localhost:3000";
   console.log("Completed!");
   res.json({
     "file_url": base_url + picture_url,
@@ -50,7 +50,7 @@ app.get('/initialize_all_pictures', function(req, res){
     }
     console.log(items.length);
     for(var i = 0; i<items.length; i++){
-      var photo = new Photo(base_url + items[i], 0, 0, Math.floor(Math.random()*1000))
+      var photo = new Photo(base_url + items[i], 0, 0,Math.floor(Math.random()*1000));
       photoArray.push(photo);
     }
 
