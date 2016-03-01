@@ -7,6 +7,15 @@ app.use(express.static(__dirname + '/public'));
 var base_url = "localhost:3000/images/";
 var photoArray = [];
 
+/*
+ * To Do:
+ *     Authentication
+ *     User Object
+ *     Database
+ *     Option to upload your own pictures
+ *     
+*/
+
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/views/index.html');
 });
@@ -24,13 +33,12 @@ app.get('/load_next_picture', function(req, res){
 });
 
 app.get('/load_ten_pictures', function(req, res){
-  //./ looks into current workign directory.
+  //./ looks into current working directory.
   var tmp = [];
-  for(var i = 0; i<10; i++){
+  for(var i = 0; i < 10; i++){
     tmp[i] = photoArray[i];
   }
   res.json(tmp);
-
 });
 
 app.get('/initialize_all_pictures', function(req, res){
