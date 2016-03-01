@@ -4,7 +4,7 @@ var Photo = require('./photo.js');
 app = express();
 app.use('/images', express.static(__dirname + '/images'));
 app.use(express.static(__dirname + '/public'));
-
+var base_url = "localhost:3000/images/";
 var photoArray = [];
 
 app.get('/', function(req, res){
@@ -42,7 +42,7 @@ app.get('/initialize_all_pictures', function(req, res){
     }
     console.log(items.length);
     for(var i = 0; i<items.length; i++){
-      var photo = new Photo(path + items[i], 0, 0,Math.floor(Math.random()*1000))
+      var photo = new Photo(base_url + items[i], 0, 0,Math.floor(Math.random()*1000))
       photoArray.push(photo);
     }
 
