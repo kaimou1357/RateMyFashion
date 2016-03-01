@@ -43,7 +43,6 @@ app.get('/load_ten_pictures', function(req, res){
 
 app.get('/initialize_all_pictures', function(req, res){
   var path = './images/';
-  var userPath = "./" + username + "Photos/"
   fs.readdir(path, function(err, items){
     if (err){
       console.log("there was an error");
