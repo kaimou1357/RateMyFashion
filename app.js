@@ -1,9 +1,24 @@
 var express = require('express');
 var fs = require('fs');
+var multer = require('multer');
 var Photo = require('./photo.js');
 app = express();
 app.use('/images', express.static(__dirname + '/images'));
 app.use(express.static(__dirname + '/public'));
+
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './images/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + ".jpg");
+  }
+})
+var upload = multer({storage:storage});
+
+
+
+//require('./routes/routes.js')(app);
 var base_url = "localhost:3000/images/";
 var photoArray = [];
 
@@ -13,7 +28,7 @@ var photoArray = [];
  *     User Object
  *     Database
  *     Option to upload your own pictures
- *     
+ *
 */
 
 app.get('/', function(req, res){
@@ -56,7 +71,19 @@ app.get('/initialize_all_pictures', function(req, res){
 
   });
   res.json({"Success" : "Done"});
-
 });
+
+app.post('/upload',upload.single('image'), function(req, res){
+  res.json({"Success": "True"});
+});
+
+app.get('/images/:file', function(req, res){
+  file = req.params.file;
+  var img = fs.readFileSync(__dirname + '/images/' + file);
+  res.writeHead(200, {'Content-Type' : 'image/jpg'});
+  res.end(img, 'binary');
+});
+
+
 
 app.listen(3000);
