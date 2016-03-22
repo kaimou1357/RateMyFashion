@@ -6,6 +6,7 @@ app.use('/images', express.static(__dirname + '/images'));
 app.use(express.static(__dirname + '/public'));
 var base_url = "localhost:3000/images/";
 var numOfPhotos = 0;
+var routes = require('./routes');
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
 	cb(null, './images/');
@@ -47,9 +48,9 @@ app.use(function(req, res, next) {
 });
 
 //error handlers
-app.use(err, req, res, next) {
+app.use(function(err, req, res, next) {
   res.render('error', {message: err.status,
 					   error: err});
-}
+});
 
 app.listen(3000);
