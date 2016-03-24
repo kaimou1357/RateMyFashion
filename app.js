@@ -50,7 +50,7 @@ app.use(function (req, res, next) {
 });
 
 //error handlers
-app.use(function (err, req, res, next) {
+app.use(function(err, req, res, next) {
   res.render('error', {message: err.status,
 					   error: err});
 });
