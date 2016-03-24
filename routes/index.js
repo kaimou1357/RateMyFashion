@@ -1,3 +1,6 @@
+var pg = require('pg');
+var connectionString = "postgres://localhost:5432/fashiondb";
+
 exports.loadTen = function(req, res, next) {
   //load ten random valid pictures
   console.log('loaded ten photos, not id ' + req.query.fbId);
@@ -18,7 +21,25 @@ exports.deletePhoto = function(req, res, next) {
 }
 
 exports.likePhoto = function(req, res, next) {
+  //request should take in parameters photo_id.
+  //UPDATE HTTP request.
   //increment likes in database
+  var results = [];
+  var data = {photo_id:req.body.photo_id, complete:false};
+
+  pg.connect(connectionString, function(err, client, done){
+    if(err){
+      done();
+      console.log(err);
+      return res.status(500).json({success:false, data: err});
+    }
+    client.query("UPDATE photos SET positiveRatings = positiveRatings + 1 WHERE photo_id = $1", [data.photo_id]);
+  });
+
+  query.on('end', function(){
+    client.end();
+  });
+
   console.log('liked photo ' + req.params.photoId);
 }
 
