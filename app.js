@@ -1,7 +1,9 @@
 var express = require('express');
 var fs = require('fs');
 var multer = require('multer');
+var bodyParser = require('body-parser');
 app = express();
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/images', express.static(__dirname + '/images'));
 app.use(express.static(__dirname + '/public'));
 var base_url = "localhost:3000/images/";
@@ -31,6 +33,7 @@ var upload = multer({storage:storage});
 */
 
 //route middleware
+app.set('view engine', 'jade');
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/views/index.html');
 });
@@ -40,19 +43,19 @@ app.post('/api/uploadPhoto/:photoId', routes.uploadPhoto);
 app.delete('/api/deletePhoto/:photoId', routes.deletePhoto);
 app.put('/api/likePhoto/:photoId', routes.likePhoto);
 app.put('/api/dislikePhoto/:photoId', routes.dislikePhoto);
-app.get('api/loadOwn', routes.loadOwn);
+app.get('/api/loadOwn', routes.loadOwn);
 
 //404 errors
-app.use(function (req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
-});
-
-//error handlers
-app.use(function(err, req, res, next) {
-  res.render('error', {message: err.status,
-					   error: err});
-});
+// app.use(function (req, res, next) {
+//   var err = new Error('Not Found');
+//   err.status = 404;
+//   next(err);
+// });
+//
+// //error handlers
+// app.use(function(err, req, res, next) {
+//   res.render('error', {message: err.status,
+// 					   error: err});
+// });
 
 app.listen(3000);
