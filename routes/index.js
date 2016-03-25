@@ -20,17 +20,89 @@ exports.deletePhoto = function(req, res, next) {
   console.log('deleted photo ' + req.params.photoId);
 }
 
+/**
+This function will increment one to the positive rating of a photo object in the database. It will return a photo object in JSON format.
+*/
 exports.likePhoto = function(req, res, next) {
-  //increment likes in database
-  console.log('liked photo ' + req.params.photoId);
+
+  var result;
+  var photoId = req.params.photoId;
+  pg.connect(connectionString, function(err, client, done){
+    if(err){
+      done();
+      console.log(err);
+      return res.status(500).json({success:false, data: err});
+    }
+    client.query("UPDATE photos SET positiveratings = positiveratings + 1 WHERE photoid = ($1)", [photoId]);
+
+    var query = client.query("SELECT photoid, positiveratings, negativeratings, ownerid, fileurl FROM photos;");
+
+    query.on('row', function(row){
+      result = row;
+    })
+
+    query.on('end', function(){
+      done();
+      return res.json(result);
+    });
+  });
 }
 
+/**
+This function will increment one to the negative rating of a photo object in the database. It will return a photo object in JSON format.
+*/
 exports.dislikePhoto = function(req, res, next) {
-  //increment dislikes in database
-  console.log('disliked photo ' + req.params.photoId);
+
+  var result;
+  var photoId = req.params.photoId;
+  pg.connect(connectionString, function(err, client, done){
+    if(err){
+      done();
+      console.log(err);
+      return res.status(500).json({success:false, data: err});
+    }
+    client.query("UPDATE photos SET negativeratings = negativeratings + 1 WHERE photoid = ($1);", [photoId]);
+
+    var query = client.query("SELECT photoid, positiveratings, negativeratings, ownerid, fileurl FROM photos;");
+
+    query.on('row', function(row){
+      result = row;
+    })
+
+    query.on('end', function(){
+      done();
+      return res.json(result);
+    });
+  });
+
 }
 
+/**
+This function will return an JSON array that represents all the photos that belong to a certain fb_id
+*/
 exports.loadOwn = function(req, res, next) {
-  //load the user's own photos
-  console.log('loaded own photos, id ' + req.query.fbId);
+  var result = [];
+  var userId = req.query.fb_id;
+
+  pg.connect(connectionString, function(err, client, done){
+    if(err){
+      done();
+      console.log(err);
+      return res.status(500).json({success:false, data: err});
+    }
+
+    var query = client.query("SELECT * FROM photos WHERE ownerid = $1;", [userId]);
+
+    query.on('row', function(row){
+      result.push(row);
+    })
+
+    query.on('end', function(){
+      done();
+      if(result.length == 0){
+        return res.json({success:false, data:userId});
+      }
+      return res.json(result);
+    });
+  });
 }
