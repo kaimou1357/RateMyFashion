@@ -1,3 +1,6 @@
+var pg = require('pg');
+var connectionString = "postgres://localhost:5432/fashiondb";
+
 exports.loadTen = function(req, res, next) {
   //load ten random valid pictures
   console.log('loaded ten photos, not id ' + req.query.fbId);
