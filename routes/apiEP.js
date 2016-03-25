@@ -47,7 +47,7 @@ exports.upload_photo = function(req, res, next) {
 	console.log('uploaded photo ' + photo_id + ' for fb_id ' + req.body.fb_id);
 }
 
-exports.deletePhoto = function(req, res, next) {
+exports.delete_photo = function(req, res, next) {
 	//delete a photo, photo_id and fb_id are passed
 
 	var photo_id = req.params.photo_id;
@@ -70,7 +70,7 @@ exports.deletePhoto = function(req, res, next) {
 /**
 This function will increment one to the positive rating of a photo object in the database. It will return a photo object in JSON format.
 */
-exports.likePhoto = function(req, res, next) {
+exports.like_photo = function(req, res, next) {
 	var result;
 	var photo_id = req.params.photo_id;
 	pg.connect(connectionString, function(err, client, done){
@@ -89,7 +89,7 @@ exports.likePhoto = function(req, res, next) {
 /**
 This function will increment one to the negative rating of a photo object in the database. It will return a photo object in JSON format.
 */
-exports.dislikePhoto = function(req, res, next) {
+exports.dislike_photo = function(req, res, next) {
 
 	var result;
 	var photo_id = req.params.photo_id;
@@ -109,7 +109,7 @@ exports.dislikePhoto = function(req, res, next) {
 /**
 This function will return an JSON array that represents all the photos that belong to a certain fb_id
 */
-exports.loadOwn = function(req, res, next) {
+exports.load_own = function(req, res, next) {
 	var result = [];
 	var user_id = req.query.fb_id;
 
