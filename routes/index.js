@@ -1,4 +1,4 @@
-var pg = require('pg');
+pg = require('pg');
 var connectionString = "postgres://localhost:5432/fashiondb";
 
 var returnJSON = function(client, done, res) {
@@ -14,19 +14,18 @@ var returnJSON = function(client, done, res) {
 	});
 }
 
-exports.loadTen = function(req, res, next) {
+exports.load_ten = function(req, res, next) {
 	//load ten random valid pictures
-	console.log('loaded ten photos, not id ' + req.query.fbId);
+	console.log('loaded ten photos, not id ' + req.query.fb_id);
 }
 
-exports.uploadPhoto = function(req, res, next) {
+exports.upload_photo = function(req, res, next) {
 	//upload photo, associated with fb_id
 	//create database row with next id
-	//fill in fbId, 0 likes, 0 dislikes
-	console.log('uploaded photo ' + photoId + ' for fbId ' + req.body.fbId);
+	//fill in fb_id, 0 likes, 0 dislikes
 	//return JSON of photo object
 
-	var ownerId = req.body.ownerId;
+	var owner_id = req.body.owner_id;
 	pg.connect(connectionString, function(err, client, done){
 		if(err){
 			done();
@@ -34,21 +33,38 @@ exports.uploadPhoto = function(req, res, next) {
 			return res.status(500).json({success: false, data: err});
 		}
 
-		var query = client.query("INSERT INTO photos (positive_ratings, negative_ratings, owner_id) VALUES (0, 0, $1) RETURNING photo_id", [ownerId]);
+		var query = client.query("INSERT INTO photos (positive_ratings, negative_ratings, owner_id) VALUES (0, 0, $1) RETURNING photo_id", [owner_id]);
 
 		query.on('row', function(row) {
-			client.query("UPDATE photos SET file_url = '/static/photos/$1'", row.photo_id);
-		});
+			var update = client.query("UPDATE photos SET file_url = $1 WHERE photo_id = $2;", ['static/photos/' + row.photo_id, row.photo_id]);
 
-		query.on('end', function() {
-			returnJSON(client, done, res);
-		})
+			update.on('end', function() {
+				returnJSON(client, done, res);
+			});
+		});
 	});
+
+	console.log('uploaded photo ' + photo_id + ' for fb_id ' + req.body.fb_id);
 }
 
 exports.deletePhoto = function(req, res, next) {
-	//delete a photo, photoId and fbId are passed
-	console.log('deleted photo ' + req.params.photoId);
+	//delete a photo, photo_id and fb_id are passed
+
+	var photo_id = req.params.photo_id;
+
+	pg.connect(connectionString, function(err, client, done){
+		if(err){
+			done();
+			console.log(err);
+			return res.status(500).json({success: false, data: err});
+		}
+
+		client.query("DELETE FROM photos WHERE photo_id = $1", [photo_id]);
+
+		returnJSON(client, done, res);
+	});
+
+	console.log('deleted photo ' + req.params.photo_id);
 }
 
 /**
@@ -56,14 +72,14 @@ This function will increment one to the positive rating of a photo object in the
 */
 exports.likePhoto = function(req, res, next) {
 	var result;
-	var photoId = req.params.photoId;
+	var photo_id = req.params.photo_id;
 	pg.connect(connectionString, function(err, client, done){
 		if(err){
 			done();
 			console.log(err);
 			return res.status(500).json({success: false, data: err});
 		}
-		client.query("UPDATE photos SET positive_ratings = positive_ratings + 1 WHERE photo_id = ($1)", [photoId]);
+		client.query("UPDATE photos SET positive_ratings = positive_ratings + 1 WHERE photo_id = ($1)", [photo_id]);
 
 		returnJSON(client, done, res);
 
@@ -76,14 +92,14 @@ This function will increment one to the negative rating of a photo object in the
 exports.dislikePhoto = function(req, res, next) {
 
 	var result;
-	var photoId = req.params.photoId;
+	var photo_id = req.params.photo_id;
 	pg.connect(connectionString, function(err, client, done){
 		if(err){
 			done();
 			console.log(err);
 			return res.status(500).json({success: false, data: err});
 		}
-		client.query("UPDATE photos SET negative_ratings = negative_ratings + 1 WHERE photo_id = ($1);", [photoId]);
+		client.query("UPDATE photos SET negative_ratings = negative_ratings + 1 WHERE photo_id = ($1);", [photo_id]);
 
 		returnJSON(client, done, res);
 	});
@@ -95,7 +111,7 @@ This function will return an JSON array that represents all the photos that belo
 */
 exports.loadOwn = function(req, res, next) {
 	var result = [];
-	var userId = req.query.fb_id;
+	var user_id = req.query.fb_id;
 
 	pg.connect(connectionString, function(err, client, done){
 		if(err){
@@ -104,7 +120,7 @@ exports.loadOwn = function(req, res, next) {
 			return res.status(500).json({success: false, data: err});
 		}
 
-		var query = client.query("SELECT * FROM photos WHERE owner_id = $1;", [userId]);
+		var query = client.query("SELECT * FROM photos WHERE owner_id = $1;", [user_id]);
 
 		query.on('row', function(row){
 			result.push(row);
@@ -113,7 +129,7 @@ exports.loadOwn = function(req, res, next) {
 		query.on('end', function(){
 			done();
 			if(result.length == 0){
-				return res.json({success: false, data:userId});
+				return res.json({success: false, data:user_id});
 			}
 
 			return res.json(result);

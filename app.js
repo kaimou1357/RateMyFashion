@@ -39,11 +39,11 @@ app.get('/', function(req, res){
 });
 
 app.get('/api/load_ten', routes.loadTen);
-app.post('/api/uploadPhoto/:photoId', routes.uploadPhoto);
-app.delete('/api/deletePhoto/:photoId', routes.deletePhoto);
-app.put('/api/likePhoto/:photoId', routes.likePhoto);
-app.put('/api/dislikePhoto/:photoId', routes.dislikePhoto);
-app.get('/api/loadOwn', routes.loadOwn);
+app.post('/api/upload_photo/:photo_id', routes.uploadPhoto);
+app.delete('/api/delete_photo/:photo_id', routes.deletePhoto);
+app.put('/api/like_photo/:photo_id', routes.likePhoto);
+app.put('/api/dislike_photo/:photo_id', routes.dislikePhoto);
+app.get('/api/load_own', routes.loadOwn);
 
 //404 errors
 // app.use(function (req, res, next) {
