@@ -97,7 +97,7 @@ exports.like_photo = function(req, res, next) {
 		client.query("INSERT INTO seen_photos (user_id, photo_id) VALUES ($1, $2);", [req.body.user_id, req.params.photo_id]);
 		var query = client.query("UPDATE photos SET likes = likes + 1 WHERE photo_id = ($1) RETURNING photo_id, likes, dislikes, user_id", [req.params.photo_id]);
 
-		returnJSON(client, done, res);
+		returnJSON(query, done, res);
 	});
 
 	console.log('liked photo ' + req.params.photo_id);
@@ -117,7 +117,7 @@ exports.dislike_photo = function(req, res, next) {
 		client.query("INSERT INTO seen_photos (user_id, photo_id) VALUES ($1, $2);", [req.body.user_id, req.params.photo_id]);
 		var query = client.query("UPDATE photos SET dislikes = dislikes + 1 WHERE photo_id = ($1) RETURNING photo_id, likes, dislikes, user_id;", [req.params.photo_id]);
 		
-		returnJSON(client, done, res);
+		returnJSON(query, done, res);
 	});
 
 	console.log('disliked photo ' + req.params.photo_id);
@@ -137,7 +137,7 @@ exports.load_own = function(req, res, next) {
 
 		var query = client.query("SELECT (photo_id, likes, dislikes) FROM photos WHERE user_id = $1;", [req.query.user_id]);
 
-		returnJSONArray(client, done, res, query);
+		returnJSONArray(query, done, res);
 	});
 
 	console.log('loaded photos for ' + req.query.user_id);
