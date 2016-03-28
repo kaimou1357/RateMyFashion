@@ -1,5 +1,6 @@
 var pg = require('pg');
 var path = require("path");
+var fs = require('fs');
 var connectionString = "postgres://localhost:5432/fashiondb";
 var baseFileURL = "http://localhost:3000/static/photos/"
 
@@ -23,16 +24,18 @@ exports.upload_photo = function(req, res, next) {
 		query.on('row', function(row, req){
 			row.file_url =  baseFileURL + row.photo_id + '.jpg';
 			result = row;
-		});
 
+			});
 		query.on('end', function(){
 			done();
-			req.file.filename = result.photo_id;
+			fs.rename('./static/photos/' + req.file.filename, './static/photos/' + result.photo_id + '.jpg', function(err){
+				if(err) console.log("Error Renaming the file!");
 			return res.json(result);
 		});
 
-	});
+		});
 
+	});
 }
 
 exports.delete_photo = function(req, res, next) {
@@ -124,6 +127,7 @@ var returnJSON = function(client, done, res, query) {
 		return res.json(result);
 	});
 }
+
 
 var returnJSONArray = function(client, done, res, query) {
 	var result = [];

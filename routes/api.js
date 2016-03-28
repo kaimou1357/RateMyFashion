@@ -6,6 +6,7 @@ var multer = require('multer');
 var storage = multer.diskStorage({
   destination: './static/photos/',
   filename:function(req, file, cb){
+    console.log(req.body.owner_id);
     cb(null, file.originalname);
   }
 });
