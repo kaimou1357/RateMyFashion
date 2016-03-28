@@ -5,6 +5,7 @@ var bodyParser = require('body-parser');
 
 var app = express();
 
+app.set("port", process.env.PORT || 3000);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/images', express.static(__dirname + '/images'));
 app.use(express.static(__dirname + '/public'));
@@ -57,5 +58,6 @@ app.use(function(err, req, res, next) {
 });
 */
 
-app.listen(3000);
-console.log('App listening on port ' + port)
+app.listen(app.get('port'), function() {
+	console.log('App listening on port ' + app.get('port'));
+});

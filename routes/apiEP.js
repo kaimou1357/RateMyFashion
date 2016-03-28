@@ -2,10 +2,12 @@ pg = require('pg');
 var connectionString = "postgres://localhost:5432/fashiondb";
 
 var returnJSON = function(client, done, res) {
+	var result = [];
 	var query = client.query("SELECT photo_id, positive_ratings, negative_ratings, owner_id, file_url FROM photos;");
 
 	query.on('row', function(row){
-		result = row;
+		row.file_url = path.join(__dirname, 'static', 'photos', row.photo_id);
+		result.push(row);
 	});
 
 	query.on('end', function(){
@@ -14,9 +16,35 @@ var returnJSON = function(client, done, res) {
 	});
 }
 
-exports.load_ten = function(req, res, next) {
+exports.load_photos = function(req, res, next) {
 	//load ten random valid pictures
-	console.log('loaded ten photos, not id ' + req.query.fb_id);
+	console.log('loaded ten photos, not id ' + req.query.user_id);
+
+	pg.connect(connectionString, function(err, client, done){
+		if (err) {
+			done();
+			console.log(err);
+			return res.status(500).json({success: false, data: err});
+		}
+
+		var query = client.query("SELECT (photo_id) FROM photos " +
+									"WHERE NOT EXISTS " +
+										"(SELECT * FROM seen_photos AS sp " +
+											"WHERE sp.photo_id = photos.photo_id) " +
+									"AND NOT user_id = $1 LIMIT $2;", 
+									[req.query.user_id, req.query.num]);
+
+		var results = [];
+
+		query.on('row', function(row) {
+			results.push(row);
+		});
+
+		query.on('end', function() {
+			done();
+			return res.json(result);
+		});
+	});
 }
 
 exports.upload_photo = function(req, res, next) {
@@ -71,7 +99,6 @@ exports.delete_photo = function(req, res, next) {
 This function will increment one to the positive rating of a photo object in the database. It will return a photo object in JSON format.
 */
 exports.like_photo = function(req, res, next) {
-	var result;
 	var photo_id = req.params.photo_id;
 	pg.connect(connectionString, function(err, client, done){
 		if(err){
@@ -90,8 +117,6 @@ exports.like_photo = function(req, res, next) {
 This function will increment one to the negative rating of a photo object in the database. It will return a photo object in JSON format.
 */
 exports.dislike_photo = function(req, res, next) {
-
-	var result;
 	var photo_id = req.params.photo_id;
 	pg.connect(connectionString, function(err, client, done){
 		if(err){
