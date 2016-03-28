@@ -19,11 +19,13 @@ exports.load_photos = function(req, res, next) {
 		}
 
 		var query = client.query("SELECT (photo_id) FROM photos " +
-									"WHERE NOT EXISTS " +
-										"(SELECT (user_id, photo_id) FROM seen_photos AS sp " +
-											"WHERE sp.photo_id = photos.photo_id) " +
-									"AND NOT user_id = $1 LIMIT $2;", 
-									[req.query.user_id, req.query.num]);
+								 	"WHERE NOT EXISTS " +
+								 		"(SELECT (photo_id) FROM seen_photos AS sp " +
+								 			"WHERE sp.photo_id = photos.photo_id " +
+								 			"AND sp.user_id = $1) " +
+								 	"AND NOT user_id = $1 " +
+								 	"LIMIT $2;",
+								 [req.query.user_id, req.query.num]);
 
 		returnJSONArray(query, done, res);
 	});
@@ -116,7 +118,7 @@ exports.dislike_photo = function(req, res, next) {
 
 		client.query("INSERT INTO seen_photos (user_id, photo_id) VALUES ($1, $2);", [req.body.user_id, req.params.photo_id]);
 		var query = client.query("UPDATE photos SET dislikes = dislikes + 1 WHERE photo_id = ($1) RETURNING photo_id, likes, dislikes, user_id;", [req.params.photo_id]);
-		
+
 		returnJSON(query, done, res);
 	});
 
