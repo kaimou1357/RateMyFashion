@@ -8,7 +8,6 @@ var baseFileURL = "http://localhost:3000/static/photos/"
 This function loads any number of photos (based on the querystring). It returns the found photos.
 */
 exports.load_photos = function(req, res, next) {
-	//load ten random valid pictures
 	console.log('loaded ten photos, not id ' + req.query.user_id);
 
 	pg.connect(connectionString, function(err, client, done){
@@ -23,7 +22,7 @@ exports.load_photos = function(req, res, next) {
 								 		"(SELECT (photo_id) FROM seen_photos AS sp " +
 								 			"WHERE sp.photo_id = photos.photo_id " +
 								 			"AND sp.user_id = $1) " +
-								 	"AND NOT user_id = $1 " +
+								 	"AND NOT user_idN = $1 " +
 								 	"LIMIT $2;",
 								 [req.query.user_id, req.query.num]);
 
@@ -68,8 +67,6 @@ exports.upload_photo = function(req, res, next) {
 This function will delete the photo whose photo_id is the one passed by the end point. It will return the deleted photo object.
 */
 exports.delete_photo = function(req, res, next) {
-	var photo_id = req.params.photo_id;
-
 	pg.connect(connectionString, function(err, client, done){
 		if (err) {
 			done();
@@ -77,7 +74,7 @@ exports.delete_photo = function(req, res, next) {
 			return res.status(500).json({success: false, data: err});
 		}
 
-		var query = client.query("DELETE FROM photos WHERE photo_id = $1 RETURNING photo_id, likes, dislikes, user_id", [photo_id]);
+		var query = client.query("DELETE FROM photos WHERE photo_id = $1 RETURNING photo_id, likes, dislikes, user_id", [req.params.photo_id]);
 
 		returnJSON(query, done, res);
 	});
@@ -145,16 +142,48 @@ exports.load_own = function(req, res, next) {
 	console.log('loaded photos for ' + req.query.user_id);
 }
 
+exports.check_user = function(res, res next) {
+	pg.connect(connectionString, function(err, client, done){
+		if (err) {
+			done();
+			console.log(err);
+			return res.status(500).json({success: false, data: err});
+		}
+
+		var query = client.query("SELECT (user_id, first_name, last_name) FROM users WHERE user_id = $1;", [req.query.user_id]);
+
+		var user;
+		query.on('row', function(row) {
+			user = row;
+		});
+
+		query.on('end', function() {
+			if (user === null) {
+				query = client.query("INSERT INTO users (user_id) VALUES ($1) RETURNING (user_id);", [req.query.user_id]);
+				returnJSON(query, done, res);
+			}
+			else {
+				done();
+				return res.json(user);
+			}
+		});
+
+		returnJSONArray(query, done, res);
+	});
+
+	console.log('checked user ' + req.query.user_id)
+}
+
 //helper functions
 var returnJSONArray = function(query, done, res) {
 	var result = [];
 
-	query.on('row', function(row){
+	query.on('row', function(row) {
 		row.file_url =  baseFileURL + row.photo_id + '.jpg';
 		result.push(row);
 	});
 
-	query.on('end', function(){
+	query.on('end', function() {
 		done();
 		return res.json(result);
 	});
@@ -168,7 +197,7 @@ var returnJSON = function(query, done, res) {
 		result = row;
 	});
 
-	query.on('end', function(){
+	query.on('end', function() {
 		done();
 		return res.json(result);
 	});
