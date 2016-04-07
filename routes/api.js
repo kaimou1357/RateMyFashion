@@ -20,9 +20,9 @@ router.get('/', function(req, res) {
 
 router.get('/load_photos', apiEP.load_photos);
 router.post('/upload_photo', upload.single('photo'), apiEP.upload_photo);
-router.delete('/delete_photo/:photo_id', apiEP.delete_photo);
-router.put('/like_photo/:photo_id', apiEP.like_photo);
-router.put('/dislike_photo/:photo_id', apiEP.dislike_photo);
+router.post('/delete_photo/', apiEP.delete_photo);
+router.post('/like_photo/', apiEP.like_photo);
+router.post('/dislike_photo/', apiEP.dislike_photo);
 router.get('/load_own', apiEP.load_own);
 router.get('/check_user', apiEP.check_user);
 

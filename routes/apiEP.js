@@ -74,12 +74,12 @@ exports.delete_photo = function(req, res, next) {
 			return res.status(500).json({success: false, data: err});
 		}
 
-		var query = client.query("DELETE FROM photos WHERE photo_id = $1 RETURNING photo_id, likes, dislikes, user_id", [req.params.photo_id]);
+		var query = client.query("DELETE FROM photos WHERE photo_id = $1 RETURNING photo_id, likes, dislikes, user_id", [req.body.photo_id]);
 
 		returnPhotoJSON(query, done, res);
 	});
 
-	console.log('deleted photo ' + req.params.photo_id);
+	console.log('deleted photo ' + req.body.photo_id);
 }
 
 /**
@@ -93,13 +93,13 @@ exports.like_photo = function(req, res, next) {
 			return res.status(500).json({success: false, data: err});
 		}
 
-		client.query("INSERT INTO seen_photos (user_id, photo_id) VALUES ($1, $2);", [req.body.user_id, req.params.photo_id]);
-		var query = client.query("UPDATE photos SET likes = likes + 1 WHERE photo_id = ($1) RETURNING photo_id, likes, dislikes, user_id", [req.params.photo_id]);
+		client.query("INSERT INTO seen_photos (user_id, photo_id) VALUES ($1, $2);", [req.body.user_id, req.body.photo_id]);
+		var query = client.query("UPDATE photos SET likes = likes + 1 WHERE photo_id = ($1) RETURNING photo_id, likes, dislikes, user_id", [req.body.photo_id]);
 
 		returnPhotoJSON(query, done, res);
 	});
 
-	console.log('liked photo ' + req.params.photo_id);
+	console.log('liked photo ' + req.body.photo_id);
 }
 
 /**
@@ -113,13 +113,13 @@ exports.dislike_photo = function(req, res, next) {
 			return res.status(500).json({success: false, data: err});
 		}
 
-		client.query("INSERT INTO seen_photos (user_id, photo_id) VALUES ($1, $2);", [req.body.user_id, req.params.photo_id]);
-		var query = client.query("UPDATE photos SET dislikes = dislikes + 1 WHERE photo_id = ($1) RETURNING photo_id, likes, dislikes, user_id;", [req.params.photo_id]);
+		client.query("INSERT INTO seen_photos (user_id, photo_id) VALUES ($1, $2);", [req.body.user_id, req.body.photo_id]);
+		var query = client.query("UPDATE photos SET dislikes = dislikes + 1 WHERE photo_id = ($1) RETURNING photo_id, likes, dislikes, user_id;", [req.body.photo_id]);
 
 		returnPhotoJSON(query, done, res);
 	});
 
-	console.log('disliked photo ' + req.params.photo_id);
+	console.log('disliked photo ' + req.body.photo_id);
 }
 
 /**
