@@ -134,7 +134,7 @@ exports.load_own = function(req, res, next) {
 			return res.status(500).json({success: false, data: err});
 		}
 
-		var query = client.query("SELECT photo_id, likes, dislikes FROM photos WHERE user_id = $1;", [req.query.user_id]);
+		var query = client.query("SELECT photo_id, likes, dislikes, user_id FROM photos WHERE user_id = $1;", [req.query.user_id]);
 
 		returnPhotoJSONArray(query, done, res);
 	});
