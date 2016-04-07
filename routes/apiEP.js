@@ -17,12 +17,12 @@ exports.load_photos = function(req, res, next) {
 			return res.status(500).json({success: false, data: err});
 		}
 
-		var query = client.query("SELECT (photo_id) FROM photos " +
+		var query = client.query("SELECT photo_id FROM photos " +
 								 	"WHERE NOT EXISTS " +
-								 		"(SELECT (photo_id) FROM seen_photos AS sp " +
+								 		"(SELECT photo_id FROM seen_photos AS sp " +
 								 			"WHERE sp.photo_id = photos.photo_id " +
 								 			"AND sp.user_id = $1) " +
-								 	"AND NOT user_idN = $1 " +
+								 	"AND NOT user_id = $1 " +
 								 	"LIMIT $2;",
 								 [req.query.user_id, req.query.num]);
 
@@ -126,7 +126,7 @@ exports.dislike_photo = function(req, res, next) {
 This function will return an JSON array that represents all the photos that belong to a certain fb_id
 */
 exports.load_own = function(req, res, next) {
-	var result = [];
+	//var result = [];
 	pg.connect(connectionString, function(err, client, done){
 		if (err) {
 			done();
@@ -134,7 +134,7 @@ exports.load_own = function(req, res, next) {
 			return res.status(500).json({success: false, data: err});
 		}
 
-		var query = client.query("SELECT (photo_id, likes, dislikes) FROM photos WHERE user_id = $1;", [req.query.user_id]);
+		var query = client.query("SELECT photo_id, likes, dislikes FROM photos WHERE user_id = $1;", [req.query.user_id]);
 
 		returnPhotoJSONArray(query, done, res);
 	});
@@ -156,7 +156,7 @@ exports.check_user = function(req, res, next) {
 			return res.status(500).json({success: false, data: err});
 		}
 
-		var query = client.query("SELECT (user_id) FROM users WHERE user_id = $1;", [req.query.user_id]);
+		var query = client.query("SELECT user_id FROM users WHERE user_id = $1;", [req.query.user_id]);
 
 		var user;
 		query.on('row', function(row) {
@@ -165,7 +165,7 @@ exports.check_user = function(req, res, next) {
 
 		query.on('end', function() {
 			if (user === null) {
-				query = client.query("INSERT INTO users (user_id) VALUES ($1) RETURNING (user_id);", [req.query.user_id]);
+				query = client.query("INSERT INTO users (user_id) VALUES ($1) RETURNING user_id;", [req.query.user_id]);
 				returnUserJSON(query, done, res);
 			}
 			else {
