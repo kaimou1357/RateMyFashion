@@ -17,7 +17,7 @@ exports.load_photos = function(req, res, next) {
 			return res.status(500).json({success: false, data: err});
 		}
 
-		var query = client.query("SELECT photo_id FROM photos " +
+		var query = client.query("SELECT photo_id, likes, dislikes FROM photos " +
 								 	"WHERE NOT EXISTS " +
 								 		"(SELECT photo_id FROM seen_photos AS sp " +
 								 			"WHERE sp.photo_id = photos.photo_id " +
