@@ -9,21 +9,12 @@ app.use('/images', express.static(__dirname + '/images'));
 app.use('/static', express.static(__dirname + '/static'));
 app.use(express.static(__dirname + '/public'));
 
-/*
- * To Do:
- *     Authentication- handled in mobile apps
- *     Database- PostGreSQL
- *     implement route middleware functions
- *     initialize database
-*/
-
 app.set('view engine', 'jade');
 
 //route middleware
 app.use('/api', require('./routes/api'));
 
-/*
-404 errors
+//404 errors
 app.use(function (req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
@@ -32,10 +23,12 @@ app.use(function (req, res, next) {
 
 //error handlers
 app.use(function(err, req, res, next) {
-  res.render('error', {message: err.status,
-					   error: err});
+	console.log('Error: ' + err.status + ': ' + err.message);
+	return res.json({
+		error: err.status,
+		message: err.message
+	});
 });
-*/
 
 app.listen(app.get('port'), function() {
 	console.log('App listening on port ' + app.get('port'));

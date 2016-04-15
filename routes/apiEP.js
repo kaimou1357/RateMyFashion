@@ -8,9 +8,9 @@ var baseFileURL = "http://localhost:3000/static/photos/"
 This function loads any number of photos (based on the querystring). It returns the found photos.
 */
 exports.load_photos = function(req, res, next) {
-	console.log('loaded ten photos, not id ' + req.query.user_id);
+	console.log('loaded ' + req.query.num + ' photos, not id ' + req.query.user_id);
 
-	pg.connect(connectionString, function(err, client, done){
+	pg.connect(connectionString, function(err, client, done) {
 		if (err) {
 			done();
 			console.log(err);
@@ -26,7 +26,7 @@ exports.load_photos = function(req, res, next) {
 								 	"LIMIT $2;",
 								 [req.query.user_id, req.query.num]);
 
-		returnPhotoJSONArray(query, done, res);
+		returnPhotoJSONArray(query, done, res, next);
 	});
 }
 
@@ -35,7 +35,7 @@ This function will upload a photo to the file system and update the database. It
 */
 exports.upload_photo = function(req, res, next) {
 	var owner_id = req.body.owner_id;
-	pg.connect(connectionString, function(err, client, done){
+	pg.connect(connectionString, function(err, client, done) {
 		if (err) {
 			done();
 			console.log(err);
@@ -47,18 +47,17 @@ exports.upload_photo = function(req, res, next) {
 		var result;
 		console.log(req.file);
 
-		query.on('row', function(row){
+		query.on('row', function(row) {
 			row.file_url =  baseFileURL + row.photo_id + '.jpg';
 			result = row;
 		});
 
-		query.on('end', function(){
+		query.on('end', function() {
 			done();
-			fs.rename('./static/photos/' + req.file.filename, './static/photos/' + result.photo_id + '.jpg', function(err){
+			fs.rename('./static/photos/' + req.file.filename, './static/photos/' + result.photo_id + '.jpg', function(err) {
 				if(err) console.log("Error Renaming the file!");
 				return res.json(result);
 			});
-
 		});
 	});
 }
@@ -67,7 +66,7 @@ exports.upload_photo = function(req, res, next) {
 This function will delete the photo whose photo_id is the one passed by the end point. It will return the deleted photo object.
 */
 exports.delete_photo = function(req, res, next) {
-	pg.connect(connectionString, function(err, client, done){
+	pg.connect(connectionString, function(err, client, done) {
 		if (err) {
 			done();
 			console.log(err);
@@ -76,7 +75,7 @@ exports.delete_photo = function(req, res, next) {
 
 		var query = client.query("DELETE FROM photos WHERE photo_id = $1 RETURNING photo_id, likes, dislikes, user_id", [req.body.photo_id]);
 
-		returnPhotoJSON(query, done, res);
+		returnPhotoJSON(query, done, res, next);
 	});
 
 	console.log('deleted photo ' + req.body.photo_id);
@@ -86,7 +85,7 @@ exports.delete_photo = function(req, res, next) {
 This function will increment one to the positive rating of a photo object in the database. It will return a photo object in JSON format.
 */
 exports.like_photo = function(req, res, next) {
-	pg.connect(connectionString, function(err, client, done){
+	pg.connect(connectionString, function(err, client, done) {
 		if (err) {
 			done();
 			console.log(err);
@@ -96,7 +95,7 @@ exports.like_photo = function(req, res, next) {
 		client.query("INSERT INTO seen_photos (user_id, photo_id) VALUES ($1, $2);", [req.body.user_id, req.body.photo_id]);
 		var query = client.query("UPDATE photos SET likes = likes + 1 WHERE photo_id = ($1) RETURNING photo_id, likes, dislikes, user_id", [req.body.photo_id]);
 
-		returnPhotoJSON(query, done, res);
+		returnPhotoJSON(query, done, res, next);
 	});
 
 	console.log('liked photo ' + req.body.photo_id);
@@ -106,7 +105,7 @@ exports.like_photo = function(req, res, next) {
 This function will increment one to the negative rating of a photo object in the database. It will return a photo object in JSON format.
 */
 exports.dislike_photo = function(req, res, next) {
-	pg.connect(connectionString, function(err, client, done){
+	pg.connect(connectionString, function(err, client, done) {
 		if (err) {
 			done();
 			console.log(err);
@@ -116,7 +115,7 @@ exports.dislike_photo = function(req, res, next) {
 		client.query("INSERT INTO seen_photos (user_id, photo_id) VALUES ($1, $2);", [req.body.user_id, req.body.photo_id]);
 		var query = client.query("UPDATE photos SET dislikes = dislikes + 1 WHERE photo_id = ($1) RETURNING photo_id, likes, dislikes, user_id;", [req.body.photo_id]);
 
-		returnPhotoJSON(query, done, res);
+		returnPhotoJSON(query, done, res, next);
 	});
 
 	console.log('disliked photo ' + req.body.photo_id);
@@ -127,7 +126,7 @@ This function will return an JSON array that represents all the photos that belo
 */
 exports.load_own = function(req, res, next) {
 	//var result = [];
-	pg.connect(connectionString, function(err, client, done){
+	pg.connect(connectionString, function(err, client, done) {
 		if (err) {
 			done();
 			console.log(err);
@@ -136,7 +135,7 @@ exports.load_own = function(req, res, next) {
 
 		var query = client.query("SELECT photo_id, likes, dislikes, user_id FROM photos WHERE user_id = $1;", [req.query.user_id]);
 
-		returnPhotoJSONArray(query, done, res);
+		returnPhotoJSONArray(query, done, res, next);
 	});
 
 	console.log('loaded photos for ' + req.query.user_id);
@@ -149,7 +148,7 @@ user_id, but eventually when we integrate other ways of logging in this may not 
 doesn't make sense to return the user_id right now, it will later on.
 */
 exports.check_user = function(req, res, next) {
-	pg.connect(connectionString, function(err, client, done){
+	pg.connect(connectionString, function(err, client, done) {
 		if (err) {
 			done();
 			console.log(err);
@@ -175,11 +174,11 @@ exports.check_user = function(req, res, next) {
 		});
 	});
 
-	console.log('checked user ' + req.query.user_id)
+	console.log('checked user ' + req.query.user_id);
 }
 
-//helper functions
-var returnPhotoJSONArray = function(query, done, res) {
+//Helper functions
+var returnPhotoJSONArray = function(query, done, res, next) {
 	var result = [];
 
 	query.on('row', function(row) {
@@ -189,25 +188,37 @@ var returnPhotoJSONArray = function(query, done, res) {
 
 	query.on('end', function() {
 		done();
-		return res.json(result);
+		if (result.length > 0)
+			return res.json(result);
+		else {
+			var err = new Error('No Content');
+  			err.status = 204;
+  			next(err);
+		}
 	});
 }
 
-var returnPhotoJSON = function(query, done, res) {
+var returnPhotoJSON = function(query, done, res, next) {
 	var result;
 
-	query.on('row', function(row){
+	query.on('row', function(row) {
 		row.file_url =  baseFileURL + row.photo_id + '.jpg';
 		result = row;
 	});
 
 	query.on('end', function() {
 		done();
-		return res.json(result);
+		if (result)
+			return res.json(result);
+		else {
+			var err = new Error('No Content');
+  			err.status = 204;
+  			next(err);
+		}
 	});
 }
 	
-var returnUserJSON = function(query, done, res) {
+var returnUserJSON = function(query, done, res, next) {
 	var result;
 
 	query.on('row', function(row) {
