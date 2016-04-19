@@ -10,6 +10,7 @@ var storage = multer.diskStorage({
     	cb(null, file.originalname);
   	}
 });
+
 var upload = multer({storage: storage});
 
 router.use(bodyParser.urlencoded({ extended: true }));

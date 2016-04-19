@@ -15,15 +15,15 @@ app.set('view engine', 'jade');
 app.use('/api', require('./routes/api'));
 
 //404 errors
-app.use(function (req, res, next) {
-	var err = new Error('Not Found');
-  	err.status = 404;
-  	next(err);
-});
+// app.use(function (req, res, next) {
+// 	var err = new Error('Not Found');
+//   	err.status = 404;
+//   	next(err);
+// });
 
 //error handlers
 app.use(function(err, req, res, next) {
-	console.log('Error: ' + err.status + ': ' + err.message);
+	console.log('  Error: ' + err.status + ': ' + err.message);
 	return res.json({
 		error: err.status,
 		message: err.message

@@ -8,7 +8,7 @@ var baseFileURL = "http://localhost:3000/static/photos/"
 This function loads any number of photos (based on the querystring). It returns the found photos.
 */
 exports.load_photos = function(req, res, next) {
-	console.log('loaded ' + req.query.num + ' photos, not id ' + req.query.user_id);
+	console.log('loading ' + req.query.num + ' photos, not id ' + req.query.user_id);
 
 	pg.connect(connectionString, function(err, client, done) {
 		if (err) {
@@ -78,7 +78,7 @@ exports.delete_photo = function(req, res, next) {
 		returnPhotoJSON(query, done, res, next);
 	});
 
-	console.log('deleted photo ' + req.body.photo_id);
+	console.log('deleting photo ' + req.body.photo_id);
 }
 
 /**
@@ -98,7 +98,7 @@ exports.like_photo = function(req, res, next) {
 		returnPhotoJSON(query, done, res, next);
 	});
 
-	console.log('liked photo ' + req.body.photo_id);
+	console.log('liking photo ' + req.body.photo_id);
 }
 
 /**
@@ -118,7 +118,7 @@ exports.dislike_photo = function(req, res, next) {
 		returnPhotoJSON(query, done, res, next);
 	});
 
-	console.log('disliked photo ' + req.body.photo_id);
+	console.log('disliking photo ' + req.body.photo_id);
 }
 
 /**
@@ -138,7 +138,7 @@ exports.load_own = function(req, res, next) {
 		returnPhotoJSONArray(query, done, res, next);
 	});
 
-	console.log('loaded photos for ' + req.query.user_id);
+	console.log('loading photos for ' + req.query.user_id);
 }
 
 /**
@@ -163,18 +163,19 @@ exports.check_user = function(req, res, next) {
 		});
 
 		query.on('end', function() {
-			if (user === null) {
-				query = client.query("INSERT INTO users (user_id) VALUES ($1) RETURNING user_id;", [req.query.user_id]);
-				returnUserJSON(query, done, res);
-			}
-			else {
+			if (user) {
 				done();
 				return res.json(user);
+			}
+			else {
+				console.log('user doesn\'t exist');
+				query = client.query("INSERT INTO users (user_id) VALUES ($1) RETURNING user_id;", [req.query.user_id]);
+				returnUserJSON(query, done, res);
 			}
 		});
 	});
 
-	console.log('checked user ' + req.query.user_id);
+	console.log('checking user ' + req.query.user_id);
 }
 
 //Helper functions
@@ -188,8 +189,10 @@ var returnPhotoJSONArray = function(query, done, res, next) {
 
 	query.on('end', function() {
 		done();
-		if (result.length > 0)
+		if (result.length > 0) {
+			console.log('  Success');
 			return res.json(result);
+		}
 		else {
 			var err = new Error('No Content');
   			err.status = 204;
@@ -208,8 +211,10 @@ var returnPhotoJSON = function(query, done, res, next) {
 
 	query.on('end', function() {
 		done();
-		if (result)
+		if (result) {
+			console.log('  Success');
 			return res.json(result);
+		}
 		else {
 			var err = new Error('No Content');
   			err.status = 204;
