@@ -125,7 +125,7 @@ exports.dislike_photo = function(req, res, next) {
 This function will return an JSON array that represents all the photos that belong to a certain fb_id
 */
 exports.load_own = function(req, res, next) {
-	//var result = [];
+	var result = [];
 	pg.connect(connectionString, function(err, client, done) {
 		if (err) {
 			done();
@@ -134,8 +134,20 @@ exports.load_own = function(req, res, next) {
 		}
 
 		var query = client.query("SELECT photo_id, likes, dislikes, user_id FROM photos WHERE user_id = $1;", [req.query.user_id]);
+		//This function should return an empty array if no photos. Makes no sense to return an error message if user truly has no photos.
 
-		returnPhotoJSONArray(query, done, res, next);
+
+		query.on('row', function(row) {
+			row.file_url =  baseFileURL + row.photo_id + '.jpg';
+			result.push(row);
+		});
+
+		query.on('end', function() {
+			done();
+			return res.json(result);
+			
+		
+		});
 	});
 
 	console.log('loading photos for ' + req.query.user_id);
