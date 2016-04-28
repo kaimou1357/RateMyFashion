@@ -1,7 +1,7 @@
 //create tables in database
 
 var pg = require('pg');
-var connectionString = 'postgres://localhost:5432/fashiondb';
+var connectionString = 'postgres://postgres:ratemyfashion@localhost:5432/fashiondb';
 
 var client = new pg.Client(connectionString);
 client.connect();

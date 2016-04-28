@@ -2,7 +2,7 @@ var pg = require('pg');
 var path = require("path");
 var fs = require('fs');
 var connectionString = "postgres://localhost:5432/fashiondb";
-var baseFileURL = "http://localhost:3000/static/photos/"
+var baseFileURL = "http://162.243.49.58:3000/static/photos/"
 
 /**
 This function loads any number of photos (based on the querystring). It returns the found photos.
