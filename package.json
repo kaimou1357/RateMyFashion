@@ -7,12 +7,14 @@
     "connect": "^3.4.1",
     "express": "^4.13.4",
     "multer": "^1.1.0",
-    "nodemon": "^1.9.1",
     "pg": "^4.5.1",
     "request": "^2.69.0"
   },
   "devDependencies": {
-    "mocha": "^2.4.5"
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5",
+    "request": "^2.72.0",
+    "standard": "^7.0.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
