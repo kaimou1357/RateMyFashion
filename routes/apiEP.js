@@ -298,6 +298,9 @@ var returnPhotoJSON = function (query, done, res, next) {
     }
   })
 }
+	
+var returnUserJSON = function(query, done, res, next) {
+	var result;
 
 var returnUserJSON = function (query, done, res, next) {
   var result
