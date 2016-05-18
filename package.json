@@ -17,8 +17,8 @@
     "standard": "^7.0.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app"
+    "start": "nodemon server/app",
+    "test": "mocha test/test-server.js"
   },
   "repository": {
     "type": "git",
