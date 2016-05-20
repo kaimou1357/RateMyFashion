@@ -1,11 +1,13 @@
 var path = require('path')
 var express = require('express')
-var app = express()
-var config = require('../config')
 var bodyParser = require('body-parser')
+var logger = require('morgan')
+
+var config = require('./config')
+var app = express()
 
 app.set('port', process.env.PORT || 3000)
-app.set('env', config[process.env.NODE_ENV])
+app.use(logger('dev'))
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 app.use('/images', express.static(path.join(__dirname, 'images')))
@@ -35,9 +37,7 @@ app.use(function (err, req, res, next) {
 
 app.listen(app.get('port'), function () {
   console.log('App listening on port ' + app.get('port'))
-  console.log('Using Database: '  + config.postgresURI[app.settings.env])
+  console.log('Using Database: ' + config.postgresURI[app.settings.env])
 })
-
-
 
 module.exports = app

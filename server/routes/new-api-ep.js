@@ -1,8 +1,8 @@
 var fs = require('fs')
-var server = require('../app')
 var pg = require('pg')
-var config = require('../../config.js')
-var connectionString = server.get('env')
+var config = require('../config.js')
+
+var connectionString = config.postgresURI[process.env.NODE_ENV]
 var baseFileURL = 'http://localhost:3000/static/photos/'
 
 exports.loadPhotos = function (req, res, next) {
@@ -14,13 +14,6 @@ exports.loadPhotos = function (req, res, next) {
     return
   }
   var limit = req.query.limit || 5
-  console.log('loading ' + limit + ' photos, not id ' + req.query.viewer)
-
-  if (!req.query.viewer) {
-    error = new Error('Database Connection Failed:\n  check database server')
-    error.status = 500
-    next(error)
-  }
 
   pg.connect(connectionString, function (err, client, done) {
     if (err) {
@@ -31,33 +24,18 @@ exports.loadPhotos = function (req, res, next) {
       return
     }
 
-    var query
-
-    if (req.query.test) {
-      query = client.query('SET SEARCH_PATH TO test;')
-      query.on('end', function () {
-        query = client.query('SELECT "photoId", likes, dislikes FROM photos ' +
-        'WHERE NOT EXISTS ' +
-        '(SELECT "photoId" FROM "seenPhotos" AS sp ' +
-        'WHERE sp.photoId = photos.photoId ' +
-        'AND sp.userId = $1) ' +
-        'AND NOT "userId" = $1 ' +
-        'LIMIT $2;',
-          [req.query.userId, req.query.num])
-        returnPhotoJSONArray(query, done, res, next)
-      })
-    } else {
-      query = client.query('SELECT "photoId", likes, dislikes FROM photos ' +
-      'WHERE NOT EXISTS ' +
-      '(SELECT "photoId" FROM "seenPhotos" AS sp ' +
-      'WHERE sp.photoId = photos.photoId ' +
-      'AND sp.userId = $1) ' +
-      'AND NOT "userId" = $1 ' +
-      'LIMIT $2;',
-        [req.query.userId, req.query.num])
-      returnPhotoJSONArray(query, done, res, next)
-    }
+    var query = client.query('SELECT "photoId", likes, dislikes, "userId" FROM photos ' +
+                               'WHERE NOT EXISTS ' +
+                                 '(SELECT "photoId" FROM "seenPhotos" AS sp ' +
+                                    'WHERE sp."photoId" = photos."photoId" ' +
+                                      'AND sp."userId" = $1) ' +
+                                      'AND NOT "userId" = $1 ' +
+                             'LIMIT $2;',
+                             [req.query.viewer, limit])
+    returnPhotoJSONArray(query, done, res, next)
   })
+
+  // console.log('loading ' + limit + ' photos, not id ' + req.query.viewer)
 }
 
 /**
@@ -108,12 +86,12 @@ exports.deletePhoto = function (req, res, next) {
       return
     }
 
-    var query = client.query('DELETE FROM photos WHERE "photoId" = $1 RETURNING "photoId", likes, dislikes, "userId"', [req.params.photoId])
+    var query = client.query('DELETE FROM photos WHERE "photoId" = $1 RETURNING "photoId", likes, dislikes, "userId"', [req.params.id])
 
     returnPhotoJSON(query, done, res, next)
   })
 
-  console.log('deleting photo ' + req.params.photoId)
+  // console.log('deleting photo ' + req.params.photoId)
 }
 
 /**
@@ -128,8 +106,8 @@ exports.updatePhoto = function (req, res, next) {
     return
   }
 
-  pg.connect(config.postgresURI[server.settings.env], function (err, client, done) {
-    //console.log(process.env.NODE_ENV)
+  pg.connect(connectionString, function (err, client, done) {
+    // console.log(process.env.NODE_ENV)
     if (err) {
       done()
       var error = new Error('Database Connection Failed:\n  check database server')
@@ -138,26 +116,17 @@ exports.updatePhoto = function (req, res, next) {
       return
     }
 
-    var query
     var action
 
-    //if (req.body.test) query = client.query('SET SEARCH_PATH TO test;')
     if (req.body.like) action = 'likes'
     else action = 'dislikes'
 
-    if (query) {
-      query.on('end', function () {
-        client.query('INSERT INTO "seenPhotos" ("userId", "photoId") VALUES ($1, $2);', [req.body.viewer, req.params.id])
-        query = client.query('UPDATE photos SET ' + action + ' = ' + action + ' + 1 WHERE "photoId" = ($1) RETURNING "photoId", likes, dislikes, "userId"', [req.params.id])
-        returnPhotoJSON(query, done, res, next)
-      })
-    } else {
-      client.query('INSERT INTO "seenPhotos" ("userId", "photoId") VALUES ($1, $2);', [req.body.viewer, req.params.id])
-      query = client.query('UPDATE photos SET ' + action + ' = ' + action + ' + 1 WHERE "photoId" = ($1) RETURNING "photoId", likes, dislikes, "userId"', [req.params.id])
+    client.query('INSERT INTO "seenPhotos" ("userId", "photoId") VALUES ($1, $2);', [req.body.viewer, req.params.id], function () {
+      var query = client.query('UPDATE photos SET ' + action + ' = ' + action + ' + 1 WHERE "photoId" = ($1) RETURNING "photoId", likes, dislikes, "userId"', [req.params.id])
       returnPhotoJSON(query, done, res, next)
-    }
+    })
 
-    console.log(action + ' photo ' + req.params.id)
+    // console.log(action + ' photo ' + req.params.id)
   })
 }
 
@@ -180,7 +149,7 @@ exports.loadOwn = function (req, res, next) {
     returnPhotoJSONArray(query, done, res, next)
   })
 
-  console.log('loading photos for ' + req.query.userId)
+  // console.log('loading photos for ' + req.query.userId)
 }
 
 /**
@@ -218,7 +187,7 @@ exports.checkUser = function (req, res, next) {
     })
   })
 
-  console.log('checking user ' + req.query.userId)
+  // console.log('checking user ' + req.query.userId)
 }
 
 // Helper functions
@@ -226,14 +195,14 @@ var returnPhotoJSONArray = function (query, done, res, next) {
   var result = []
 
   query.on('row', function (row) {
-    row.file_url = baseFileURL + row.photoId + '.jpg'
+    row.fileUrl = baseFileURL + row.photoId + '.jpg'
     result.push(row)
   })
 
   query.on('end', function () {
     done()
     if (result.length > 0) {
-      console.log('  Success')
+      // console.log('  Success')
       return res.json(result)
     } else {
       var err = new Error('No Content')
@@ -247,14 +216,14 @@ var returnPhotoJSON = function (query, done, res, next) {
   var result
 
   query.on('row', function (row) {
-    row.file_url = baseFileURL + row.photoId + '.jpg'
+    row.fileUrl = baseFileURL + row.photoId + '.jpg'
     result = row
   })
 
   query.on('end', function () {
     done()
     if (result) {
-      console.log('  Success')
+      // console.log('  Success')
       return res.json(result)
     } else {
       var err = new Error('No Content')
