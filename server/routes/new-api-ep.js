@@ -144,7 +144,7 @@ exports.loadOwn = function (req, res, next) {
       return
     }
 
-    var query = client.query('SELECT "photoId", likes, dislikes, "userId" FROM photos WHERE "userId" = $1;', [req.params.userId])
+    var query = client.query('SELECT "photoId", likes, dislikes, "userId" FROM photos WHERE "userId" = $1;', [req.params.id])
 
     returnPhotoJSONArray(query, done, res, next)
   })
@@ -168,7 +168,7 @@ exports.checkUser = function (req, res, next) {
       return
     }
 
-    var query = client.query('SELECT "userId" FROM users WHERE "userId" = $1;', [req.params.userId])
+    var query = client.query('SELECT "userId" FROM users WHERE "userId" = $1;', [req.params.id])
 
     var user
     query.on('row', function (row) {
