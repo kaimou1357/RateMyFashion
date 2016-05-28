@@ -208,17 +208,15 @@ describe('Photos', function () {
     })
     it('should return user\'s own photos on /api/users/<id>/photos GET', function(done){
       chai.request(server)
-        .get('/api/users/test2/photos')
+        .get('/api/users/test3/photos')
         .end(function(err, res){
           if(err){
             console.log(err)
             done()
           } else{
-            console.log(res)
             res.should.have.status(200)
             res.body.should.be.an('array')
             res.body.length.should.equal(5)
-            //each user should have 5 photos to themselves. 
             for (var i = 0; i < res.body.length; i++) {
               res.body[i].should.have.all.keys('photoId', 'likes', 'dislikes', 'userId', 'fileUrl')
               res.body[i].userId.should.be.a('string')
