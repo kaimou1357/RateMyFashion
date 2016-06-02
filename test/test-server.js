@@ -263,7 +263,7 @@ describe('Photos', function () {
   })
 
   afterEach(function (done) {
-    pg.connect(config.postgresURI[server.settings.env], function (err, client, end) {
+    pg.connect(config.postgresURI[process.env.NODE_ENV], function (err, client, end) {
       if (err) {
         console.log(err)
         end()

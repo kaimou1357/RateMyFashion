@@ -21,9 +21,9 @@ router.get('/', function (req, res) {
 
 router.get('/photos', apiEP.loadPhotos)
 router.post('/photos', upload.single('photo'), apiEP.uploadPhoto)
-router.delete('/photos/:id', apiEP.deletePhoto)
-router.put('/photos/:id', apiEP.updatePhoto)
-router.get('/users/:id/photos', apiEP.loadOwn)
-router.get('/users/:id', apiEP.checkUser)
+router.delete('/photos/:photoid', apiEP.deletePhoto)
+router.put('/photos/:photoid', apiEP.updatePhoto)
+router.get('/users/:userid/photos', apiEP.loadOwn)
+router.get('/users/:userid', apiEP.checkUser)
 
 module.exports = router

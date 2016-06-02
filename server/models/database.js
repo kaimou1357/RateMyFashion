@@ -1,7 +1,7 @@
 // create tables in database
 var pg = require('pg')
 var config = require('../config')
-var connectionString = config.postgresURI[process.env.NODE_ENV]
+var connectionString = 'postgres://localhost:5432/fashiondb'
 
 var client = new pg.Client(connectionString)
 client.connect(function (err) {

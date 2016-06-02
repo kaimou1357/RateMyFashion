@@ -86,7 +86,7 @@ exports.deletePhoto = function (req, res, next) {
       return
     }
 
-    var query = client.query('DELETE FROM photos WHERE "photoId" = $1 RETURNING "photoId", likes, dislikes, "userId"', [req.params.id])
+    var query = client.query('DELETE FROM photos WHERE "photoId" = $1 RETURNING "photoId", likes, dislikes, "userId"', [req.params.photoid])
 
     returnPhotoJSON(query, done, res, next)
   })
@@ -121,7 +121,7 @@ exports.updatePhoto = function (req, res, next) {
     if (req.body.like) action = 'likes'
     else action = 'dislikes'
 
-    client.query('INSERT INTO "seenPhotos" ("userId", "photoId") VALUES ($1, $2);', [req.body.viewer, req.params.id], function () {
+    client.query('INSERT INTO "seenPhotos" ("userId", "photoId") VALUES ($1, $2);', [req.body.viewer, req.params.photoid], function () {
       var query = client.query('UPDATE photos SET ' + action + ' = ' + action + ' + 1 WHERE "photoId" = ($1) RETURNING "photoId", likes, dislikes, "userId"', [req.params.id])
       returnPhotoJSON(query, done, res, next)
     })
@@ -144,7 +144,7 @@ exports.loadOwn = function (req, res, next) {
       return
     }
 
-    var query = client.query('SELECT "photoId", likes, dislikes, "userId" FROM photos WHERE "userId" = $1;', [req.params.id])
+    var query = client.query('SELECT "photoId", likes, dislikes, "userId" FROM photos WHERE "userId" = $1;', [req.params.userid])
 
     returnPhotoJSONArray(query, done, res, next)
   })
@@ -168,7 +168,7 @@ exports.checkUser = function (req, res, next) {
       return
     }
 
-    var query = client.query('SELECT "userId" FROM users WHERE "userId" = $1;', [req.params.id])
+    var query = client.query('SELECT "userId" FROM users WHERE "userId" = $1;', [req.params.userid])
 
     var user
     query.on('row', function (row) {
@@ -177,11 +177,12 @@ exports.checkUser = function (req, res, next) {
 
     query.on('end', function () {
       if (user) {
+        console.log(user)
         done()
         return res.json(user)
       } else {
         console.log("user doesn't exist")
-        query = client.query('INSERT INTO users ("userId") VALUES ($1) RETURNING "userId";', [req.params.userId])
+        query = client.query('INSERT INTO users ("userId") VALUES ($1) RETURNING "userId";', [req.params.userid])
         returnUserJSON(query, done, res)
       }
     })
