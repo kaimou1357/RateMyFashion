@@ -122,7 +122,7 @@ exports.updatePhoto = function (req, res, next) {
     else action = 'dislikes'
 
     client.query('INSERT INTO "seenPhotos" ("userId", "photoId") VALUES ($1, $2);', [req.body.viewer, req.params.photoid], function () {
-      var query = client.query('UPDATE photos SET ' + action + ' = ' + action + ' + 1 WHERE "photoId" = ($1) RETURNING "photoId", likes, dislikes, "userId"', [req.params.id])
+      var query = client.query('UPDATE photos SET ' + action + ' = ' + action + ' + 1 WHERE "photoId" = ($1) RETURNING "photoId", likes, dislikes, "userId"', [req.params.photoid])
       returnPhotoJSON(query, done, res, next)
     })
 

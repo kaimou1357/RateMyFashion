@@ -18,7 +18,7 @@
     "standard": "^7.0.0"
   },
   "scripts": {
-    "start": "nodemon server/app",
+    "start": "NODE_ENV=development nodemon server/app",
     "test": "NODE_ENV=test mocha test"
   },
   "repository": {
